@@ -31,11 +31,11 @@ class QuizInterface:
 
         # Set Buttons
         true_img = PhotoImage(file="images/true.png")
-        self.true_button = Button(image=true_img)
+        self.true_button = Button(image=true_img, command=self.true_response)
         self.true_button.grid(column=0, row=2)
 
         false_img = PhotoImage(file="images/false.png")
-        self.false_button = Button(image=false_img)
+        self.false_button = Button(image=false_img, command=self.false_response)
         self.false_button.grid(column=1, row=2)
 
         # Display question
@@ -44,5 +44,28 @@ class QuizInterface:
         self.window.mainloop()
 
     def get_next_question(self):
-        q_text = self.quiz.next_question()
-        self.canvas.itemconfig(self.question_text, text=q_text)
+        self.canvas.config(bg="white")
+        if self.quiz.still_has_questions():
+            self.score_label.config(text=f"Score: {self.quiz.score}")
+            q_text = self.quiz.next_question()
+            self.canvas.itemconfig(self.question_text, text=q_text)
+        else:
+            self.canvas.itemconfig(self.question_text, text="You have reached the end of the quiz!")
+            self.true_button.config(state="disabled")
+            self.false_button.config(state="disabled")
+
+    def true_response(self):
+        is_right = self.quiz.check_answer("True")
+        self.give_feedback(is_right)
+
+    def false_response(self):
+        is_right = self.quiz.check_answer("False")
+        self.give_feedback(is_right)
+        
+    # Canvas background indicates if response is correct
+    def give_feedback(self, is_right: bool):
+        if is_right:
+            self.canvas.config(bg="green")
+        else:
+            self.canvas.config(bg="red")
+        self.window.after(1000, self.get_next_question)
